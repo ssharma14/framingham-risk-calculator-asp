@@ -1,0 +1,351 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="Site.master.cs" Inherits="SiteMaster" %>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <title>Framingham Risk Calculator</title>
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" type="text/css" href="../themes/jAlert-v2.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <!--external css-->
+    <script type="text/javascript" src="../Scripts/jAlert-v2.js"></script> 
+    <link rel="stylesheet" type="text/css" href="../themes/bootstrap-fullcalendar.css" />
+    <link href="../themes/jquery-ui-1.10.4.custom.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../themes/style.css" />
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" />
+  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script defer src="https://use.fontawesome.com/releases/v5.0.9/js/all.js" integrity="sha384-8iPTk2s/jMVj81dnzb/iFR2sdA7u06vHJyyLlAd4snFpCl/SnyUjRrbdJsw1pGIl" crossorigin="anonymous"></script>
+<script type="text/javascript" src="FraminghamCalculator.js"></script>
+
+    <script>
+        $(function () {
+            $("#cDate").datepicker();
+        });
+
+    </script>
+<style type="text/css" media="print">
+    
+    .noborder {
+	    scrollbar-3dlight-color: transparent;
+	    scrollbar-3dlight-color: transparent;
+	    scrollbar-arrow-color: transparent;
+	    scrollbar-base-color: transparent;
+	    scrollbar-darkshadow-color: transparent;
+	    scrollbar-face-color: transparent;
+	    scrollbar-highlight-color: transparent;
+	    scrollbar-shadow-color: transparent;
+	    scrollbar-track-color: transparent;
+	    background: transparent;
+	    overflow: hidden;
+	    border : 0px;
+    }
+
+</style>
+
+
+<style type="text/css">
+
+*
+{
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-family: /*"gill sans", helvetica,*/ arial, sans-serif;
+	text-align: left;
+	font-size: 16px;
+}
+input[type="text"]{
+    width:100%;
+}
+
+h1, h2, h3
+{
+    margin: 17px 0px;
+}
+
+h2
+{
+	padding-top: 17px;
+	border-bottom: 1px dotted #127785;
+}
+
+h2.nobar
+{
+	border: 0;
+	padding-bottom: 0;
+}
+
+input.bdr
+{
+	border: 1px solid #5c4d46;
+	padding: 7px 3px;
+}
+
+#cal
+{
+	background-color: #58c9f3;
+	padding: 3px 5px;
+	color:#fff;
+}
+
+#submit
+{
+    background-color:#78CD51;
+    padding: 3px 5px;
+	color:#fff;
+	margin-right:10px;
+}
+
+#print
+{
+    background-color:#41cac0;
+    padding: 3px 13px;
+	color:#fff;
+}
+
+.offred{
+    color: #FF0000;
+}
+
+.normaltext {
+	font-family: Arial;
+	font-size: 16px;
+}
+
+.smallertext {
+	font-family: Arial;
+	font-size: 16px;
+}
+.lettertext {
+	font-family: Arial;
+	font-size: 16px;
+
+}
+.noscreenborder {
+	scrollbar-3dlight-color: transparent;
+	scrollbar-3dlight-color: transparent;
+	scrollbar-arrow-color: transparent;
+	scrollbar-base-color: transparent;
+	scrollbar-darkshadow-color: transparent;
+	scrollbar-face-color: transparent;
+	scrollbar-highlight-color: transparent;
+	scrollbar-shadow-color: transparent;
+	scrollbar-track-color: transparent;
+	background: transparent;
+	overflow: hidden;
+	border : 0px;
+}
+
+
+.label
+{
+    color:#333;
+    font-size:16px;
+    display:inline-block;
+    text-align:left;
+}
+
+label
+{
+    margin-bottom:0;
+}
+.radio
+{
+    display:inline;
+    margin:0;
+    padding:1px;
+    line-height:normal;
+}
+#bp_error, #chl_error, #hdl_error, #age_error
+{
+    color:Red;
+    display:block;
+}
+
+#low-risk
+{
+    width:25px;
+    height:25px;
+    background-color:#009590;
+    margin-right:10px;
+    display:none;
+}
+#moderate-risk
+{
+    width:25px;
+    height:25px;
+    background-color:#fff200;
+    margin-right:10px;
+    display:none;
+}
+#high-risk
+{
+    width:25px;
+    height:25px;
+    background-color:#bf1e2e;
+    margin-right:10px;
+    display:none;
+}
+
+  </style>
+</head>
+<body onload="OnPageLoad()">
+    <div class="container">
+        <form method="post" action="" id="Framingham" runat="server">
+
+        <input name="PatientGender" id="PatientGender" type="hidden" oscarDB="sex" />
+        <input name="dailySmokes" id="dailySmokes" type="hidden" oscarDB="m$NOSK#value" />
+        <input name="smoker" id="smoker" type="hidden" oscarDB="m$SMK#value" />
+        <input name="A1C" id="A1C" type="hidden" oscarDB="m$A1C#value" />
+        <input name="history" id="history" type="hidden" oscarDB="medical_history" />
+        <input name="BPRx" id="BPRx" type="hidden" />
+
+        <div>
+            <div style="text-align: center;">
+                <h1 class="pt-5 pb-3 font-weight-bold">Framingham Risk Calulator</h1>
+            </div>
+            <div>
+                <h2>Your Details</h2>
+                <p class="pb-3">This calculator is for use only in <b>primary prevention</b> for those age of 30 or above, and
+                    should not be used for individuals with known heart disease. For
+                    DIABETICS use the UKPDS calculator
+                </p>
+                <input id="m$FRAM#value" name="m$FRAM#value"  type="hidden" oscarDB="m$FRAM#value" /> 
+                <input id="m$FRAM#dateObserved" name="m$FRAM#dateObserved"  type="hidden" oscarDB="m$FRAM#dateObserved" /> 
+                <input id="m$TCHL#dateObserved" name="m$TCHL#dateObserved"  type="hidden" oscarDB="m$TCHL#dateObserved" /> 
+                 <div class="row">   
+                    <div class="col-12 mb-5">
+                        <div class="row mx-auto">
+                            <div class="col-md-6 form-group row">
+                                <p class="label col-sm-3 pl-0 pl-md-3">Name:</p>
+                                <p class="col-md-9 pl-0 pl-md-3"> <asp:TextBox ID="cName" runat="server" Enabled="true" cssClass="bdr" style="padding:5px"></asp:TextBox></p>
+                            </div>
+                            <div class="col-md-6 form-group row">    
+                                <p class="label col-sm-3 pl-0 pl-md-3">Date:</p>
+                                <p class="col-sm-9 pl-0 pl-md-3"> <asp:TextBox ID="cDate" runat="server" cssClass="bdr" Enabled="false" style="padding:5px"></asp:TextBox></p>
+                            </div>
+                            
+                            
+                            <div class="col-md-6 form-group row">
+                                <p class="label col-sm-3 pl-0 pl-md-3"><span class="offred">*</span>&nbsp;Age:</p>
+                                <p class="col-sm-9 pl-0 pl-md-3"><asp:TextBox ID="cAge" runat="server" cssClass="bdr" name="cAge" Enabled="true" style="padding:5px"></asp:TextBox>
+                                    <label for="error" id= "age_error"></label>
+                                </p>
+                            </div>
+                            <div class="col-md-6 form-group row">    
+                                <p class="label col-sm-3 pl-0 pl-md-3"><span class="offred">*</span>&nbsp;Gender:</p>
+                                    <p class="col-sm-9 pl-0 pl-md-3">
+                                    <asp:RadioButton ID="cMale" runat="server" name="1"  Enabled="true" style="padding-right:5px;" Checked="true"/>Male<br />
+                                    <asp:RadioButton ID="cFemale" runat="server"  name="2" Enabled="true" style="padding-right:5px;"/>Female
+                                </p>
+                            </div>
+
+                            <div class="col-md-6 form-group row">   
+                                <p class="label col-sm-3 pl-0 pl-md-3"><span class="offred">*</span>&nbsp;Systolic BP:</p>
+                                <p class="col-sm-9 pl-0 pl-md-3"><input id="cSystolic" class="bdr" size="5" name="cSystolic" type="text" runat="server" onblur="bpValidation()"/> mmHg
+                                    <label for="error" id= "bp_error"></label>
+                                    <%--<asp:requiredfieldvalidator runat="server" id="req" controltovalidate="csystolic" errormessage="please enter your bp" cssclass="error"></asp:requiredfieldvalidator>
+                                    <asp:rangevalidator runat="server" id="range" controltovalidate="csystolic" minimumvalue="10" maximumvalue="380" errormessage="please enter a value greater than or equal to 10." cssclass="error"></asp:rangevalidator>--%>
+                                </p>
+                            </div>
+                            <div class="col-md-6 form-group row">   
+                                <p class="label col-sm-3 pl-0 pl-md-3"><span class="offred">*</span>&nbsp;BP Treated?</p>
+                                <p class="col-sm-9 pl-0 pl-md-3"> 
+                                    <input id="cUntreated" name="bptreated" checked="checked" type="radio" />
+                                    <label class="radio" for="cUntreated">Untreated BP</label><br />
+                                    <input id="cTreated" name="bptreated" type="radio" /> 
+                                    <label class="radio" for="cTreated">Treated BP</label> 
+                                </p>
+                                </div>
+
+                            <div class="col-md-6 form-group row">   
+                                <p class="label col-sm-3 pl-0 pl-md-3"><span class="offred">*</span>&nbsp;Total Cholesterol:</p>
+                                <p class="col-sm-9 pl-0 pl-md-3">
+                                    <input type="text" id="cCholesterol" name="cCholesterol" class="bdr" onblur="tlchlValidation()"/> mmol/L
+                                    <label for="error" id= "chl_error"></label>
+                                </p>
+                            </div>
+                            <div class="col-md-6 form-group row">
+                                <p class="label col-sm-3 pl-0 pl-md-3"><span class="offred">*</span>&nbsp;Smoker?</p>
+                                <p class="col-sm-9 pl-0 pl-md-3">  
+                                    <input id="cNonSmoker" name="smoking" checked="checked" type="radio" /> 
+                                    <label class="cNonSmoker" for="cNonSmoker">Non- or Ex-smoker</label><br />
+                                    <input id="cCurSmoker" name="smoking" type="radio" /> 
+                                    <label class="cCurSmoker" for="cCurSmoker">Current Smoker</label>
+                                </p>
+                            </div>
+
+                            <div class="col-md-6 form-group row">
+                                <p class="label col-sm-3 pl-0 pl-md-3"><span class="offred">*</span>&nbsp;HDL:</p>
+                                <p class="col-sm-9 pl-0 pl-md-3">
+                                    <input id="cHDL" class="bdr" size="5" name="cHDL" type="text" oscarDB="m$HDL#value" onblur="hdlValidation()" /> mmol/L
+                                    <label for="error" id= "hdl_error"></label>
+                                </p>
+                            </div>
+                            <div class="col-md-6 form-group row">
+                                <p class="label col-sm-5 pl-0 pl-md-3"><span class="offred">*</span>&nbsp;Is patient diabetic?</p>
+                                <p class="col-md-7 pl-0 pl-md-3">
+                                    <input id="isDiabetesY" name="isDiabetes" checked="checked" type="radio" />
+                                    <label class="isDiabetesY" for="isDiabetesY">Yes</label><br />
+                                    <input id="isDiabetesN" name="isDiabetes" type="radio" /> 
+                                    <label class="isDiabetesN" for="isDiabetesN">No</label>
+                                </p>
+                            </div>
+                            <p class="mt-0">
+                                <input class="btn calculate font-weight-bold px-4 py-2 mt-0 btn-shadow btn-info" id = "cal" value="Calculate" onclick="testCalculation()" type="button" data-toggle="modal" data-target="#exampleModal"/>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                           
+                </div>
+            <asp:HiddenField ID="hdnPatMRN" runat="server" Value="" />
+            <asp:HiddenField ID="hdnframingham" runat="server" Value="" />
+            <asp:HiddenField ID="hdndocdbkey" runat="server" Value="" />
+            <asp:HiddenField ID="hdnServerMessage" runat="server" Value="" />
+        </div>
+    </form>
+    </div>
+
+    <div class="modal" tabindex="-1" role="dialog" id="exampleModal" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title nobar" id="exampleModalLabel">Your Results</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <h5 class="pb-5">Framingham Ten-Year Coronary Heart Disease Risk</h5>
+                    <div style="padding-bottom:20px;">
+                        <label for="total_points" id="total_points">Total points</label>
+                        &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+                        <label for="result" id="result_value">Risk %</label>
+                    </div>        
+                    <div style="padding-bottom:20px;">      
+                                
+                    </div>
+                    <div style="padding-bottom:20px;">     
+                        <label for="result" id="heart_age">Heart age in years</label>
+                        &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+                            <div id="low-risk"></div>
+                        <div id="moderate-risk"></div>
+                        <div id="high-risk"></div>   
+                        <label for="risk_level" id="risk_level">Risk Level</label>
+                    </div> 
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
