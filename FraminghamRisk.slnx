@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/FraminghamRisk.Api/FraminghamRisk.Api.csproj" />
+    <Project Path="src/FraminghamRisk.Domain/FraminghamRisk.Domain.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/FraminghamRisk.Domain.Tests/FraminghamRisk.Domain.Tests.csproj" />
+  </Folder>
+</Solution>

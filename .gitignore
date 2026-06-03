@@ -1,0 +1,30 @@
+# .NET
+**/bin/
+**/obj/
+*.user
+
+# Legacy Web Forms compiled binaries (capital "Bin" isn't caught by **/bin/ on
+# case-sensitive filesystems). Keep the legacy source, drop the 11MB of DLLs/PDBs.
+legacy/Bin/
+
+# Node / Vite
+web/node_modules/
+web/dist/
+
+# Local env / secrets
+**/.env.local
+**/appsettings.*.local.json
+
+# SQLite database + its WAL/SHM sidecar files (generated at runtime)
+*.db
+*.db-shm
+*.db-wal
+
+# Firebase
+.firebase/
+.firebaserc
+
+# OS / editor
+.DS_Store
+.vs/
+.idea/
