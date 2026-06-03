@@ -1,0 +1,4 @@
+# Exclude the archived legacy ASP.NET Web Forms app (bundled third-party JS/CSS:
+# jQuery, MicrosoftAjax, bootstrap, ...) from GitHub's language statistics and
+# collapse it in diffs. The active project lives in src/, web/, and tests/.
+legacy/** linguist-vendored
