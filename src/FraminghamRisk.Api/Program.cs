@@ -7,6 +7,12 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Bind to the host-provided PORT so the same image runs anywhere (Cloud Run,
+// Render, Koyeb, ...). Locally, PORT is unset and launchSettings/urls apply.
+var port = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrWhiteSpace(port))
+    builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+
 builder.Services.AddOpenApi();
 builder.Services.AddSingleton<FraminghamCalculator>();
 
@@ -40,15 +46,21 @@ builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
 // CORS. In development allow any local origin (whatever port Vite picks); in
-// production the SPA is same-origin via the Firebase rewrite, so CORS isn't needed.
+// production the SPA is served from Firebase Hosting on a different origin than
+// this API, so allow those origins explicitly.
 const string DevCors = "dev";
+string[] prodOrigins =
+[
+    "https://framingham-risk-calculator.web.app",
+    "https://framingham-risk-calculator.firebaseapp.com",
+];
 builder.Services.AddCors(options =>
     options.AddPolicy(DevCors, policy =>
     {
         if (builder.Environment.IsDevelopment())
             policy.SetIsOriginAllowed(_ => true).AllowAnyHeader().AllowAnyMethod();
         else
-            policy.WithOrigins("http://localhost:5173").AllowAnyHeader().AllowAnyMethod();
+            policy.WithOrigins(prodOrigins).AllowAnyHeader().AllowAnyMethod();
     }));
 
 var app = builder.Build();
@@ -67,6 +79,9 @@ if (app.Environment.IsDevelopment())
 app.UseCors(DevCors);
 app.UseRateLimiter();
 
+// Liveness probe for the host's health check (works in any environment).
+app.MapGet("/health", () => Results.Ok("ok")).WithName("Health");
+
 app.MapPost("/api/assessments", async (
     PatientInput input,
     FraminghamCalculator calc,
@@ -77,7 +92,7 @@ app.MapPost("/api/assessments", async (
     try
     {
         var result = calc.Calculate(input);
-        var sessionId = GetOrCreateSession(ctx);
+        var sessionId = SessionId(ctx) ?? Guid.NewGuid().ToString("N");
         db.Assessments.Add(Assessment.From(input, result, DateTime.UtcNow, sessionId));
         await db.SaveChangesAsync(ct);
         return Results.Ok(result);
@@ -89,11 +104,11 @@ app.MapPost("/api/assessments", async (
 })
 .WithName("CreateAssessment");
 
-// History is scoped to the caller's session cookie: a visitor only ever sees
-// their own assessments. No cookie yet (first visit) → empty list.
+// History is scoped to the caller's session token (X-Session-Id header): a
+// visitor only ever sees their own assessments. No token yet → empty list.
 app.MapGet("/api/assessments", async (AppDbContext db, HttpContext ctx, CancellationToken ct) =>
 {
-    var sessionId = ctx.Request.Cookies[SessionCookie];
+    var sessionId = SessionId(ctx);
     if (string.IsNullOrWhiteSpace(sessionId))
         return Results.Ok(Array.Empty<AssessmentSummary>());
 
@@ -131,28 +146,11 @@ app.MapPost("/api/assessments/explain", async (
 
 app.Run();
 
-// Returns the visitor's session id, creating and setting the cookie if absent.
-// The cookie is HttpOnly (not needed by JS) and persists so history survives
-// across visits from the same browser.
-static string GetOrCreateSession(HttpContext ctx)
+// The visitor's session token, sent by the SPA as the X-Session-Id header
+// (generated and stored in localStorage on the client). Works cross-origin
+// without third-party cookies. Returns null when absent.
+static string? SessionId(HttpContext ctx)
 {
-    if (ctx.Request.Cookies.TryGetValue(SessionCookie, out var existing)
-        && !string.IsNullOrWhiteSpace(existing))
-        return existing;
-
-    var id = Guid.NewGuid().ToString("N");
-    ctx.Response.Cookies.Append(SessionCookie, id, new CookieOptions
-    {
-        HttpOnly = true,
-        SameSite = SameSiteMode.Lax,
-        Secure = ctx.Request.IsHttps, // false over dev http, true in production
-        MaxAge = TimeSpan.FromDays(30),
-        Path = "/",
-    });
-    return id;
-}
-
-public partial class Program
-{
-    private const string SessionCookie = "frs_session";
+    var id = ctx.Request.Headers["X-Session-Id"].FirstOrDefault();
+    return string.IsNullOrWhiteSpace(id) ? null : id;
 }

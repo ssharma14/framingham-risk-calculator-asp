@@ -22,21 +22,22 @@ LLM turns the result into a plain-language explanation with lifestyle suggestion
 - **Typed SPA** — React + TypeScript form and results, with a colour-coded
   Low / Moderate / High risk badge and "heart age".
 - **Assessment history** — every calculation is persisted with **EF Core + SQLite** and
-  shown back as a "recent assessments" list. History is **scoped to the visitor's session**
-  (an HttpOnly cookie), so people only ever see their own results; no names are stored.
+  shown back as a "recent assessments" list. History is **scoped to the visitor's browser**
+  (a session token sent via header), so people only ever see their own results; no names are stored.
   Provider can be swapped to **Postgres** without touching the rest of the app.
 - **AI explanation** — an "Explain my result" feature that grounds an LLM in the computed
   result to produce a layperson summary + suggestions. Provider-agnostic (OpenAI-compatible;
   defaults to **Groq**'s free tier) with a **local fallback** when no key is configured.
 - **Resilient** — the calculator also works offline (in-browser fallback) if the API is down.
-- **Deployable** — Dockerised API for **Cloud Run** + static SPA on **Firebase Hosting**.
+- **Deployable** — Dockerised API (runs on **Render**, Cloud Run, or any container host) +
+  static SPA on **Firebase Hosting**.
 
 ---
 
 ## Architecture
 
 ```
-┌────────────────────┐      /api (same origin)      ┌──────────────────────────┐
+┌────────────────────┐      HTTPS / JSON (/api)     ┌──────────────────────────┐
 │  React + TS (Vite) │ ───────────────────────────▶ │  ASP.NET Core 10 Web API │
 │  form · results    │ ◀─────────────────────────── │  validation · rate limit │
 │  history · AI panel│                              └─────────────┬────────────┘
@@ -53,8 +54,8 @@ LLM turns the result into a plain-language explanation with lifestyle suggestion
 - **`FraminghamRisk.Domain`** — framework-free C#: models + `FraminghamCalculator`. Fully unit-testable.
 - **`FraminghamRisk.Api`** — minimal API endpoints, validation, rate limiting, EF Core
   persistence, and AI orchestration.
-- **`web/`** — React + TypeScript SPA (Vite). Calls `/api`; same-origin via a dev proxy and
-  via Firebase rewrites in production (so the AI key stays server-side and there's no CORS).
+- **`web/`** — React + TypeScript SPA (Vite). Calls the API same-origin via a dev proxy
+  locally, and directly via `VITE_API_URL` (CORS-enabled) in production.
 
 ---
 
@@ -67,7 +68,7 @@ LLM turns the result into a plain-language explanation with lifestyle suggestion
 | Database | **EF Core** + **SQLite** (Postgres-ready), migrations |
 | Testing & CI | xUnit, **GitHub Actions** |
 | AI | OpenAI-compatible LLM (default **Groq**), server-side key, graceful fallback |
-| Infra | **Docker**, **Cloud Run**, **Firebase Hosting** |
+| Infra | **Docker**, **Render** (or Cloud Run), **Firebase Hosting** |
 
 ---
 
@@ -83,8 +84,9 @@ LLM turns the result into a plain-language explanation with lifestyle suggestion
 ├── web/                         # React + TypeScript SPA (Vite)
 ├── legacy/                      # archived original ASP.NET Web Forms app
 ├── .github/workflows/ci.yml     # CI: build + test (backend & frontend)
-├── Dockerfile                   # API container (Cloud Run)
-├── firebase.json                # Hosting + rewrite /api/** -> Cloud Run
+├── Dockerfile                   # API container (Render / Cloud Run)
+├── render.yaml                  # Render Blueprint for the API
+├── firebase.json                # Firebase Hosting config (static SPA)
 ├── DEPLOY.md                    # deployment guide
 └── FraminghamRisk.slnx          # solution
 ```
@@ -133,7 +135,7 @@ The domain tests cover scoring brackets, male/female differences, table edge cas
 | Method | Route | Body | Returns |
 | --- | --- | --- | --- |
 | `POST` | `/api/assessments` | `PatientInput` | `RiskResult` (points, risk %, heart age, level); persists the assessment |
-| `GET` | `/api/assessments` | – | the caller's own recent assessments (scoped by session cookie) |
+| `GET` | `/api/assessments` | – | the caller's own recent assessments (scoped by `X-Session-Id`) |
 | `POST` | `/api/assessments/explain` | `PatientInput` | `{ summary, suggestions[], source }` (rate-limited) |
 
 ```bash
@@ -145,6 +147,8 @@ curl -s -X POST http://localhost:5095/api/assessments -H "Content-Type: applicat
 
 ## Deploy
 
-The C# API runs as a Docker container on **Cloud Run**; the static SPA is served by
-**Firebase Hosting**, which rewrites `/api/**` to the Cloud Run service (same-origin, no CORS,
-server-side AI key). See **[DEPLOY.md](DEPLOY.md)** for step-by-step instructions.
+The C# API runs as a Docker container on **Render** (free tier; a `render.yaml` Blueprint is
+included), and the static SPA is served by **Firebase Hosting**. The SPA reaches the API via
+`VITE_API_URL`, and the API allows the Hosting origin through CORS. The AI key stays
+server-side as an environment variable on the API host. See **[DEPLOY.md](DEPLOY.md)** for
+step-by-step instructions.

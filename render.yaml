@@ -1,0 +1,20 @@
+# Render Blueprint for the C# API (free, no credit card required).
+# In the Render dashboard: New → Blueprint → connect this repo. Render reads this
+# file, builds the Dockerfile, and gives the service a public https URL.
+services:
+  - type: web
+    name: framingham-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: oregon
+    healthCheckPath: /health
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: Llm__BaseUrl
+        value: https://api.groq.com/openai/v1
+      - key: Llm__Model
+        value: llama-3.3-70b-versatile
+      # Optional: add Llm__ApiKey as a secret in the Render dashboard to enable
+      # real AI. Without it, the app uses the local fallback explainer.
