@@ -2,7 +2,7 @@ using FraminghamRisk.Domain;
 
 namespace FraminghamRisk.Api.Data;
 
-/// <summary>Shape returned by GET /api/assessments — a row in the history list.</summary>
+// Returned by GET /api/assessments.
 public record AssessmentSummary(
     int Id,
     DateTime CreatedAt,

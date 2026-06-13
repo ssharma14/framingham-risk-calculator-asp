@@ -7,9 +7,7 @@ import {
 
 const BASE = import.meta.env.VITE_API_URL ?? '';
 
-// A stable per-browser session token kept in localStorage and sent as the
-// X-Session-Id header. Scopes assessment history to this browser and works
-// cross-origin (API on a different domain) without third-party cookies.
+// Stable per-browser id sent as X-Session-Id so history works without cookies.
 function sessionId(): string {
   let id = localStorage.getItem('frs_session');
   if (!id) {
@@ -19,14 +17,10 @@ function sessionId(): string {
   return id;
 }
 
-function headers(extra?: Record<string, string>): Record<string, string> {
-  return { 'X-Session-Id': sessionId(), ...extra };
-}
-
-export async function fetchRisk(input: PatientInput): Promise<RiskResult> {
-  const res = await fetch(`${BASE}/api/assessments`, {
+async function post<T>(path: string, input: PatientInput): Promise<T> {
+  const res = await fetch(`${BASE}${path}`, {
     method: 'POST',
-    headers: headers({ 'Content-Type': 'application/json' }),
+    headers: { 'X-Session-Id': sessionId(), 'Content-Type': 'application/json' },
     body: JSON.stringify(input),
   });
   if (!res.ok) {
@@ -34,6 +28,10 @@ export async function fetchRisk(input: PatientInput): Promise<RiskResult> {
     throw new Error(body.error ?? 'Request failed');
   }
   return res.json();
+}
+
+export function fetchRisk(input: PatientInput): Promise<RiskResult> {
+  return post('/api/assessments', input);
 }
 
 export interface Explanation {
@@ -42,20 +40,10 @@ export interface Explanation {
   source: 'ai' | 'fallback';
 }
 
-export async function fetchExplanation(input: PatientInput): Promise<Explanation> {
-  const res = await fetch(`${BASE}/api/assessments/explain`, {
-    method: 'POST',
-    headers: headers({ 'Content-Type': 'application/json' }),
-    body: JSON.stringify(input),
-  });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.error ?? 'Request failed');
-  }
-  return res.json();
+export function fetchExplanation(input: PatientInput): Promise<Explanation> {
+  return post('/api/assessments/explain', input);
 }
 
-// One row of the persisted assessment history (GET /api/assessments).
 export interface AssessmentSummary {
   id: number;
   createdAt: string; // ISO timestamp (UTC)
@@ -71,7 +59,9 @@ export interface AssessmentSummary {
 }
 
 export async function fetchHistory(): Promise<AssessmentSummary[]> {
-  const res = await fetch(`${BASE}/api/assessments`, { headers: headers() });
+  const res = await fetch(`${BASE}/api/assessments`, {
+    headers: { 'X-Session-Id': sessionId() },
+  });
   if (!res.ok) throw new Error('Could not load history');
   return res.json();
 }

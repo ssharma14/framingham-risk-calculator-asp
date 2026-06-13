@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { prefersReducedMotion } from '../lib/animation';
 
-// Staggers [data-enter] descendants of the returned ref into view on mount.
+// Staggers [data-enter] elements into view on mount.
 export function useEntranceAnimation<T extends HTMLElement>() {
   const scope = useRef<T>(null);
 

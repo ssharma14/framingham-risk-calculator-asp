@@ -1,6 +1,5 @@
 import type { RiskResult } from './framingham';
 
-// Shared Tailwind class bundles for consistent controls and cards.
 export const cardClass =
   'rounded-xl border border-line bg-surface p-6 shadow-[0_1px_3px_rgba(0,0,0,0.04)]';
 export const noteClass =
@@ -18,7 +17,7 @@ export const btnBase =
   'cursor-pointer rounded-lg border border-line-soft bg-surface px-[1.4rem] py-2.5 text-[0.95rem] font-semibold text-ink-soft';
 export const btnPrimary = 'border-brand bg-brand text-white hover:bg-brand-dark';
 
-// Risk level -> bg utility. Literal strings so Tailwind's scanner keeps them.
+// Literal strings so Tailwind's scanner keeps them.
 export const levelBg: Record<RiskResult['level'], string> = {
   Low: 'bg-risk-low',
   Moderate: 'bg-risk-moderate',

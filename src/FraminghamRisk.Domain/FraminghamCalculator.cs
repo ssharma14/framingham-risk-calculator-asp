@@ -2,13 +2,10 @@ using System.Globalization;
 
 namespace FraminghamRisk.Domain;
 
-/// <summary>
-/// Framingham 10-year cardiovascular risk score.
-/// Ported from the original client-side FraminghamCalculator.js.
-/// </summary>
+// Framingham 10-year CVD risk score (ported from FraminghamCalculator.js).
 public class FraminghamCalculator
 {
-    // Risk percentage (Male, Female). Index 0 corresponds to a score of -3.
+    // [Male, Female], index 0 = score of -3
     private static readonly (string Male, string Female)[] CvdRiskTable =
     {
         ("<1", "<1"), ("1.1", "<1"), ("1.4", "1.0"), ("1.6", "1.2"), ("1.9", "1.5"),
@@ -19,7 +16,7 @@ public class FraminghamCalculator
         (">30", "27.5"), (">30", ">30"),
     };
 
-    // Heart age (Male, Female). Index 0 corresponds to a score of -1.
+    // [Male, Female], index 0 = score of -1
     private static readonly (string Male, string Female)[] HeartAgeTable =
     {
         ("<30", "<30"), ("30", "<30"), ("32", "31"), ("34", "34"), ("36", "36"),

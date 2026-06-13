@@ -2,10 +2,7 @@ using FraminghamRisk.Domain;
 
 namespace FraminghamRisk.Api.Ai;
 
-/// <summary>
-/// Deterministic, rule-based explanation used when no AI provider is configured
-/// or when a call to the model fails. Keeps the feature usable in any demo.
-/// </summary>
+// Rule-based explanation used when no AI provider is configured or a call fails.
 public class FallbackExplainer : IRiskExplainer
 {
     public Task<Explanation> ExplainAsync(

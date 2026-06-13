@@ -7,8 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Bind to the host-provided PORT so the same image runs anywhere (Cloud Run,
-// Render, Koyeb, ...). Locally, PORT is unset and launchSettings/urls apply.
+// Honour the host's PORT in production; locally it's unset and launchSettings wins.
 var port = Environment.GetEnvironmentVariable("PORT");
 if (!string.IsNullOrWhiteSpace(port))
     builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
@@ -16,18 +15,15 @@ if (!string.IsNullOrWhiteSpace(port))
 builder.Services.AddOpenApi();
 builder.Services.AddSingleton<FraminghamCalculator>();
 
-// Assessment history. SQLite by default; swap the provider/connection string to
-// move to Postgres without touching the rest of the app.
+// SQLite by default; swap the provider/connection string for Postgres.
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("Default")
         ?? "Data Source=framingham.db"));
 
-// AI explanation: an OpenAI-compatible provider when a key is configured,
-// otherwise a local fallback.
 builder.Services.AddSingleton<FallbackExplainer>();
 builder.Services.AddHttpClient<IRiskExplainer, LlmRiskExplainer>();
 
-// Per-IP rate limit on the AI endpoint to protect the shared server-side key.
+// Per-IP rate limit on the AI endpoint.
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -41,13 +37,11 @@ builder.Services.AddRateLimiter(options =>
             }));
 });
 
-// Serialize enums as strings ("Male", "Low") instead of numbers.
+// Serialize enums as strings instead of numbers.
 builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
-// CORS. In development allow any local origin (whatever port Vite picks); in
-// production the SPA is served from Firebase Hosting on a different origin than
-// this API, so allow those origins explicitly.
+// Dev: allow any local origin (Vite picks a port). Prod: the Firebase-hosted SPA only.
 const string DevCors = "dev";
 string[] prodOrigins =
 [
@@ -65,7 +59,7 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Apply migrations on startup so the SQLite file exists and is up to date.
+// Apply migrations on startup.
 using (var scope = app.Services.CreateScope())
 {
     scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.Migrate();
@@ -73,13 +67,12 @@ using (var scope = app.Services.CreateScope())
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi(); // OpenAPI doc at /openapi/v1.json
+    app.MapOpenApi();
 }
 
 app.UseCors(DevCors);
 app.UseRateLimiter();
 
-// Liveness probe for the host's health check (works in any environment).
 app.MapGet("/health", () => Results.Ok("ok")).WithName("Health");
 
 app.MapPost("/api/assessments", async (
@@ -104,8 +97,7 @@ app.MapPost("/api/assessments", async (
 })
 .WithName("CreateAssessment");
 
-// History is scoped to the caller's session token (X-Session-Id header): a
-// visitor only ever sees their own assessments. No token yet → empty list.
+// History is scoped to the caller's session token; no token → empty list.
 app.MapGet("/api/assessments", async (AppDbContext db, HttpContext ctx, CancellationToken ct) =>
 {
     var sessionId = SessionId(ctx);
@@ -146,9 +138,6 @@ app.MapPost("/api/assessments/explain", async (
 
 app.Run();
 
-// The visitor's session token, sent by the SPA as the X-Session-Id header
-// (generated and stored in localStorage on the client). Works cross-origin
-// without third-party cookies. Returns null when absent.
 static string? SessionId(HttpContext ctx)
 {
     var id = ctx.Request.Headers["X-Session-Id"].FirstOrDefault();

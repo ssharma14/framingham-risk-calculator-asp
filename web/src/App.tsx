@@ -55,15 +55,13 @@ function App() {
 
     try {
       setResult(await fetchRisk(input));
-      reload(); // API persisted this assessment; refresh the history.
-    } catch (err) {
-      // Fall back to the local calculation if the API is unreachable.
+      reload();
+    } catch (apiError) {
+      // API down, so calculate locally instead.
       try {
         setResult(calculateRisk(input));
       } catch {
-        setError(
-          err instanceof Error ? err.message : 'Something went wrong while calculating.'
-        );
+        setError(apiError instanceof Error ? apiError.message : 'Could not calculate the risk score.');
       }
     }
   };

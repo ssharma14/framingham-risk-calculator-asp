@@ -2,22 +2,12 @@ using FraminghamRisk.Domain;
 
 namespace FraminghamRisk.Api.Data;
 
-/// <summary>
-/// A persisted Framingham assessment: the patient inputs, the computed result,
-/// and when it was created. No patient-identifying data (e.g. name) is stored —
-/// this is a privacy-conscious history of anonymous calculations.
-/// </summary>
+// A persisted assessment. No name or identifying data is stored.
 public class Assessment
 {
     public int Id { get; set; }
 
-    /// <summary>UTC timestamp. Stored as DateTime (not DateTimeOffset) so SQLite can ORDER BY it.</summary>
-    public DateTime CreatedAt { get; set; }
-
-    /// <summary>
-    /// Opaque per-browser session id (from the "frs_session" cookie). History is
-    /// scoped to this so a visitor only sees their own assessments, not everyone's.
-    /// </summary>
+    public DateTime CreatedAt { get; set; } // UTC; DateTime so SQLite can ORDER BY it
     public string SessionId { get; set; } = "";
 
     // Inputs

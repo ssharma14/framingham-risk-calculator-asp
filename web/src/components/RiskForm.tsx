@@ -19,7 +19,7 @@ interface RiskFormProps {
   onReset: () => void;
 }
 
-// Two-option radio group, reused for sex / BP / smoker / diabetic.
+// Two-option radio group (sex, BP, smoker, diabetic).
 interface ChoiceProps {
   label: string;
   name: string;

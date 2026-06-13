@@ -1,7 +1,4 @@
-// Framingham 10-year cardiovascular risk — TypeScript port of the original
-// FraminghamCalculator.js. Pure functions, no DOM access, fully unit-testable.
-// In Phase 3 this same contract is served by the ASP.NET Core API; the UI can
-// then call the API instead of computing locally.
+// Framingham 10-year CVD risk, ported from FraminghamCalculator.js.
 
 export type Sex = 'male' | 'female';
 export type RiskLevel = 'Low' | 'Moderate' | 'High';
@@ -24,7 +21,7 @@ export interface RiskResult {
   level: RiskLevel;
 }
 
-// risk percentage [male, female] — index 0 corresponds to a score of -3
+// [male, female], index 0 = score of -3
 const CVD_RISK_TABLE: [string | number, string | number][] = [
   ['<1', '<1'], [1.1, '<1'], [1.4, 1.0], [1.6, 1.2], [1.9, 1.5], [2.3, 1.7],
   [2.8, 2.0], [3.3, 2.3], [3.9, 2.8], [4.7, 3.3], [5.6, 3.9], [6.7, 4.5],
@@ -33,7 +30,7 @@ const CVD_RISK_TABLE: [string | number, string | number][] = [
   ['>30', 27.5], ['>30', '>30'],
 ];
 
-// heart age in years [male, female] — index 0 corresponds to a score of -1
+// [male, female], index 0 = score of -1
 const HEART_AGE_TABLE: [string | number, string | number][] = [
   ['<30', '<30'], [30, '<30'], [32, 31], [34, 34], [36, 36], [38, 39], [40, 42],
   [42, 45], [45, 48], [48, 51], [51, 55], [54, 59], [57, 64], [60, 68],
@@ -108,13 +105,8 @@ function lookup(
   return String(value);
 }
 
-// Numeric magnitude used to bucket the risk into Low/Moderate/High.
-function riskMagnitude(riskPercent: string): number {
-  return parseFloat(riskPercent.replace(/[<>]/g, ''));
-}
-
 function riskLevel(riskPercent: string): RiskLevel {
-  const value = riskMagnitude(riskPercent);
+  const value = parseFloat(riskPercent.replace(/[<>]/g, ''));
   if (value < 10) return 'Low';
   if (value >= 20) return 'High';
   return 'Moderate';
@@ -150,9 +142,7 @@ export function calculateRisk(input: PatientInput): RiskResult {
     smokingScore(input.smoker, input.sex) +
     diabetesScore(input.diabetic, input.sex);
 
-  // risk table starts at score -3 (clamped to its valid range)
   const riskIndex = Math.min(Math.max(totalPoints + 3, 0), CVD_RISK_TABLE.length - 1);
-  // heart-age table starts at score -1
   const heartIndex = Math.min(Math.max(totalPoints + 1, 0), HEART_AGE_TABLE.length - 1);
 
   const riskPercent = lookup(CVD_RISK_TABLE, riskIndex, input.sex);

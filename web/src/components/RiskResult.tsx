@@ -27,7 +27,6 @@ export function RiskResult({
   const cardRef = useRef<HTMLDivElement>(null);
   const percentRef = useRef<HTMLElement>(null);
 
-  // On a new result: fade contents in, count the risk % up.
   useEffect(() => {
     if (!result || prefersReducedMotion()) return;
     const ctx = gsap.context(() => {
@@ -40,7 +39,7 @@ export function RiskResult({
       });
 
       const raw = result.riskPercent;
-      // Only count up plain numbers like "12.0" — skip "<1" / ">30".
+      // Only count up plain numbers, not "<1" / ">30".
       if (percentRef.current && /^[0-9.]+$/.test(raw)) {
         const decimals = raw.split('.')[1]?.length ?? 0;
         const proxy = { v: 0 };
@@ -121,9 +120,9 @@ export function RiskResult({
                   {explanation.summary}
                 </p>
                 <ul className="m-0 grid list-disc gap-1.5 pl-[1.1rem]">
-                  {explanation.suggestions.map((s, i) => (
-                    <li key={i} className="text-[0.88rem] text-ink-soft">
-                      {s}
+                  {explanation.suggestions.map((suggestion) => (
+                    <li key={suggestion} className="text-[0.88rem] text-ink-soft">
+                      {suggestion}
                     </li>
                   ))}
                 </ul>

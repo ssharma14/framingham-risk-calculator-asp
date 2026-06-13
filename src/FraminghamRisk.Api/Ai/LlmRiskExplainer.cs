@@ -5,13 +5,8 @@ using FraminghamRisk.Domain;
 
 namespace FraminghamRisk.Api.Ai;
 
-/// <summary>
-/// Calls any OpenAI-compatible chat-completions endpoint (Groq, Gemini's OpenAI
-/// surface, OpenRouter, Ollama, OpenAI, ...) to generate a plain-language
-/// explanation grounded in the patient's structured assessment data.
-/// Falls back to a local explainer when no API key is configured or the call
-/// fails, so the feature always works (graceful degradation).
-/// </summary>
+// Calls an OpenAI-compatible chat endpoint for the explanation, falling back to
+// the local explainer when there's no API key or the call fails.
 public class LlmRiskExplainer : IRiskExplainer
 {
     private readonly HttpClient _http;
